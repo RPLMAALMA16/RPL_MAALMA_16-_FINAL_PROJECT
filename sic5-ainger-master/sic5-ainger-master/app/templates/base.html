@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ainger Library</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+
+    <header class="text-white fs-3">
+        <div class="container d-flex justify-content-between align-items-center py-3">
+          <div class="d-flex align-items-center">
+            <img src="{{ url_for('static', filename='images/RPL.png') }}" width="60" alt="Logo">
+            <h1 class="ml-3 mb-0">Perpustakaan RPL MAALMA</h1>
+          </div>
+          <nav class="navbar navbar-expand-lg navbar-dark">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link" id="menu-beranda" href="{{ url_for('main.index') }}">Beranda</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="menu-rekomendasi" href="{{ url_for('main.rekomendasi_buku') }}">Rekomendasi Buku</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="menu-peminjaman" href="{{ url_for('main.menu_peminjaman') }}">Menu Peminjaman</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="menu-pengembalian" href="{{ url_for('main.menu_pengembalian') }}">Menu Pengembalian</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="menu-registrasi" href="{{ url_for('main.registrasi') }}">Registrasi</a>
+                </li>
+              </ul>
+            </div>
+          </nav>
+        </div>
+      </header>
+      
+
+{% block content %}
+{% endblock %}
+
+</body>
+
+{% block script %}
+{% endblock %}
+</html>
