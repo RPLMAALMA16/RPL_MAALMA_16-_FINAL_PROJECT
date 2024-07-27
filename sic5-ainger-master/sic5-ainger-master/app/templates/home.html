@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="Sambutan" style="text-align: center;">
+  <br>
+  <br>
+  <h2>Selamat datang di</h2>
+  <h2>Perpustakaan RPL MAALMA</h2>
+  <p id="notif-1" >Scan sidik jarimu pada alat yang telah disiapkan</p>
+  <p id="notif-2">untuk menggunakan sistem</p>
+  <h3 id="notif-3" hidden>Halo <span id="notif-3-name"></span> selamat menggunakan aplikasi AINGER</h3>
+  <img src="{{ url_for('static', filename='images/ARA.png') }}" width="160px">
+  <img src="{{ url_for('static', filename='images/iqbal.png') }}" width="100px">
+
+  <br>
+  <button id="button-scan" type="button" class="btn btn-primary" onclick="openModal()">
+    Scan
+  </button>
+  <button id="logout" type="button" class="btn btn-danger" onclick="logout()" hidden>
+    Logout
+  </button>
+
+<!-- The Modal -->
+<div class="modal fade" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title" id="scanning-text">Scanning</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <!-- Modal Body -->
+            <div class="modal-body" id="modal-content">
+                <span id="scan-result">Menunggu hasil scan..</span>
+                <span id="user-name" hidden></span>
+                <span id="user-fingerprint" hidden></span>
+            </div>
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+              <button id="login-button" type="button" class="btn btn-primary" data-dismiss="modal" onclick="login()" hidden>Login</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+<script>
+
+  function openModal(){
+    document.getElementById("scan-result").innerText = "Menunggu Hasil Scan.."
+    document.getElementById("login-button").hidden = true
+    document.getElementById("user-name").innerText = ""
+    document.getElementById("user-fingerprint").innerText = ""
+    $('#myModal').modal('show');
+  }
+
+  function login(){
+    let user_fingerprint = document.getElementById("user-fingerprint").innerText
+    let user_name = document.getElementById("user-name").innerText
+    sessionStorage.setItem("user_fingerprint", user_fingerprint)
+    sessionStorage.setItem("user_name", user_name)
+    window.location.href = "/rekomendasi"
+  }
+
+  document.getElementById("menu-beranda").classList.add("active");
+  document.getElementById("menu-rekomendasi").classList.remove("active");
+  document.getElementById("menu-peminjaman").classList.remove("active");
+  document.getElementById("menu-pengembalian").classList.remove("active");
+  // document.getElementById("menu-registrasi").classList.remove("active");
+
+  var mqtt;
+  var reconnectTimeout = 2000;
+  var host="broker.hivemq.com"; //change this
+  var port=8000;
+  MQTTconnect();  
+  function onFailure(message) {
+    console.log("Connection Attempt to Host "+host+"Failed");
+    setTimeout(MQTTconnect, reconnectTimeout);
+      }
+
+
+  function onMessageArrived(msg){
+    
+    if (msg.destinationName == "/sic5/ainger/sidik_jari"){
+      console.log(msg.payloadString)  
+      fetch("/get_students/"+msg.payloadString,{
+        method: "GET"
+      })
+      .then(response => response.json())
+      .then(data=>{
+        if(data.message == "success"){
+          document.getElementById("scan-result").innerText = "Selamat datang, "+data.name
+          document.getElementById("user-name").innerText = data.name
+          document.getElementById("user-fingerprint").innerText = data.fingerprint
+          document.getElementById("login-button").hidden = false
+        }
+        else{
+          document.getElementById("scan-result").innerText = "Data tidak ditemukan, silahkan registrasi"
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    }
+  }
+  
+  function onConnect() {
+  console.log("Connected ");
+  mqtt.subscribe("/sic5/ainger/#");
+  }
+  
+  function MQTTconnect() {
+  console.log("connecting to "+ host +" "+ port);
+  var x=Math.floor(Math.random() * 10000); 
+  var cname="orderform-"+x;
+  mqtt = new Paho.MQTT.Client(host,port,cname);
+  var options = {
+    timeout: 3,
+    onSuccess: onConnect,
+    onFailure: onFailure,
+    };
+  mqtt.onMessageArrived = onMessageArrived
+  
+  mqtt.connect(options); 
+  }
+
+  document.addEventListener("DOMContentLoaded",()=>{
+    let user_name = sessionStorage.getItem("user_name")
+    if(user_name){
+      document.getElementById("notif-1").hidden = true
+      document.getElementById("notif-2").hidden = true
+      document.getElementById("notif-3").hidden = false
+      document.getElementById("notif-3-name").innerText = user_name
+      document.getElementById("logout").hidden = false
+      document.getElementById("button-scan").hidden = true
+    }
+  })
+
+  function logout(){
+    sessionStorage.clear()
+    document.getElementById("notif-1").hidden = false
+    document.getElementById("notif-2").hidden = false
+    document.getElementById("notif-3").hidden = true
+    document.getElementById("logout").hidden = true
+    document.getElementById("button-scan").hidden = false
+    window.location.reload()
+  }
+
+</script>
+{% endblock %}
